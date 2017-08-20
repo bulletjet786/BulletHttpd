@@ -1,0 +1,21 @@
+POST / HTTP/1.1
+Host: www.demo.com
+Cache-Control: no-cache
+Postman-Token: 679d816d-8757-14fd-57f2-fbc2518dddd9
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="key"
+
+value
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="testKey"
+
+testValue
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="imgFile"; filename="no-file"
+Content-Type: application/octet-stream
+
+
+111王
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

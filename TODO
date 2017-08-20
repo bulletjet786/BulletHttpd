@@ -1,0 +1,5 @@
+1. 编写GET方法解析测试
+2. URL的编码问题（只需要支持utf-8）
+3. 添加queryString字段，然后重新生成hashcode和equals方法
+4. 图片传输（解析二进制流）
+5.
