@@ -38,7 +38,7 @@ public class HandlerCenter {
 
   private class HandleRequest implements Runnable {
 
-    private  final Socket cs;
+    private final Socket cs;
 
     @Override
     public void run() {

@@ -40,9 +40,6 @@ public class SelecterCenter {
     }
 
 
-
-
-
   }
 
   private static void doIter(Selector selector, Set<SelectionKey> selectKeys) throws IOException {
@@ -65,7 +62,7 @@ public class SelecterCenter {
 
         while (bb.hasRemaining()) {
           byte b = bb.get();
-          System.out.println(Integer.toHexString(b) + ": " + (char)b);
+          System.out.println(Integer.toHexString(b) + ": " + (char) b);
         }
         it.remove();
       } else {

@@ -18,7 +18,7 @@ public class BulletHttpd {
   private int port = 8888;
 
 
-  public static void main(String[] args) throws IOException{
+  public static void main(String[] args) throws IOException, NotSupportException {
     ServerSocket ss = new ServerSocket(8888, 20, InetAddress.getByName("localhost"));
     System.out.println(ss.getInetAddress());
     System.out.println(ss.getLocalPort());
@@ -40,7 +40,6 @@ public class BulletHttpd {
 
 
   }
-
 
 
 }
