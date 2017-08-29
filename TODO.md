@@ -14,7 +14,13 @@
 18. 使用GSON生成Json字符串，以后为了压缩包可替换
 19. 添加临时文件管理器FileManager来管理上传的文件
 15. 为Request解析Cookie
-16. 为Request_multi解析para
+~~16. 为Request_multi解析para~~
+17. multipart/form-date中的中文问题
+~~18. 重写multipart解析部分，增加更多的可读性，修改变量名称~~
+19. 将Request中的Head类提取出来，不再作为一个类，而作为一个单独字段，使用map存储
+
+
+
 
 条件：
 6. 只需要支持urlencode和多表单提交

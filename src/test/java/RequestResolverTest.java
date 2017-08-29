@@ -107,10 +107,11 @@ public class RequestResolverTest {
     expect.head.headers = headers;
     expect.paras.put("key", "value");
     expect.paras.put("testKey", "testValue");
-    expect.paras.put("imgFile", "no-file");
+    expect.paras.put("imgFile",
+        new File(".").getAbsolutePath() + "/src/main/resources/temp_fileupload_1.txt");
     expect.body = Optional.of(expect.new Body());
-    expect.body.get().charset = Optional.of("utf-8");
-    expect.body.get().contentType = expect.body.get().CONTENT_TYPE_URLENCODED;
+    expect.body.get().contentType = expect.body.get().CONTENT_TYPE_MULTI_FORM;
+    expect.body.get().boundary = Optional.of("----WebKitFormBoundary7MA4YWxkTrZu0gW");
     expect.body.get().requestBody = ("------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
         + "Content-Disposition: form-data; name=\"key\"\r\n"
         + "\r\n"

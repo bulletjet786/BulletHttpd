@@ -23,7 +23,7 @@ public class UtilsTest {
     Assert.assertEquals(1, Utils.findFirst(new Byte[]{'A', 'B', 'C'}, new Byte[]{'B', 'C'}));
     Assert.assertEquals(1, Utils.findFirst("ABCBC".getBytes(), "BC".getBytes()));
     Assert.assertEquals(3,
-        Utils.findFirst(new Byte[]{'A', 'B', 'C', 013, 010}, new Byte[]{013, 010}));
+        Utils.findFirst(new byte[]{'A', 'B', 'C', 013, 010}, new byte[]{013, 010}));
     Assert.assertEquals(1, Utils.findFirst("ABC".getBytes(), "BC".getBytes()));
   }
 

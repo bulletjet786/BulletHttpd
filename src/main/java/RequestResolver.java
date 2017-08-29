@@ -1,4 +1,6 @@
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -16,6 +18,7 @@ public class RequestResolver {
 
   private Request request;    // 将要生成的请求对象
   public static String SEPARATOR = "\r\n";
+  public FileManager fileManager = new FileManager();
 
   /**
    * 从请求行中提取请求信息
@@ -98,27 +101,69 @@ public class RequestResolver {
       // 填充boundary字段
       for (String arg : contentTypeArgs) {
         if (arg.trim().toLowerCase().startsWith("Boundary".toLowerCase())) {
-          request.body.get().boundary = Optional.of(arg.trim().toLowerCase().split("=")[1]);
+          request.body.get().boundary = Optional.of(arg.trim().split("=")[1]);
         }
       }
       // 提取请求参数
-      String boundarySeparation = "--" + request.body.get().boundary;
-      String boundaryEnd = "--" + request.body.get().boundary + "--";
-      int boundaryEndIndex;
-      if ((boundaryEndIndex = Utils.findFirst(requestBody, boundaryEnd.getBytes())) == -1) {
+      String boundarySeparation = "--" + request.body.get().boundary.get();
+      String boundaryEnd = "--" + request.body.get().boundary.get() + "--";
+      if (Utils.findFirst(requestBody, boundaryEnd.getBytes()) == -1) {
         throw new NotSupportException("找不到请求体多表单提交的边界结束符");
       } else {
-        byte[][] parts = Utils.split(requestBody, boundarySeparation.getBytes());
-        // 去除第一个空bytes和最后一个无用的bytes，并去除剩余byte中收尾无用的\r\n
-
+        byte[][] originalParts = Utils.split(requestBody, boundarySeparation.getBytes());
+        // 去除第一个空bytes和最后一个无用的bytes，并去除剩余byte中首尾无用的\r\n
+        byte[][] parts = new byte[originalParts.length - 2][];
+        for (int i = 0; i < parts.length; i++) {
+          parts[i] = Arrays.copyOfRange(originalParts[i + 1], 2, originalParts[i + 1].length - 2);
+        }
         // 普通的不带filename的表单添加到paras中，文件表单统一使用二进制流进行保存
         for (byte[] part : parts) {
-          byte[][] headAndBody = Utils.split(part, (SEPARATOR + SEPARATOR).getBytes());
+          String paraName = "undefined";
+          String paraValue = "undefined";
+          String filename = "undefined";
+          boolean isFileUpload = false;
+          byte[][] partHeadAndBody = Utils.split(part, (SEPARATOR + SEPARATOR).getBytes());
+          String head = new String(partHeadAndBody[0]);
+          byte[] partBody = partHeadAndBody[1];
+          String[] partHeadLines = head.split(SEPARATOR);
+          for (String partHeadLine : partHeadLines) {
+            String[] keyAndValue = partHeadLine.split(": ");
+            String keyOfLine = keyAndValue[0].trim();
+            String valueOfLine = keyAndValue[1].trim();
+            // 找到Content-Disposition，如果其对应的value中没有filename字段，就当作普通表单数据保存到paras中
+            if (keyOfLine.equals("Content-Disposition")) {
+              // 提取出键值对参数
+              if (valueOfLine.startsWith("form-data;")) {
+                String[] partLineParas = valueOfLine
+                    .substring("form-data; ".length(), valueOfLine.length()).trim().split("; ");
+                // 再次切分，形成键值对数组
+                for (String partLinePara : partLineParas) {
+                  String[] keyValuePairPartLinePara = partLinePara.split("=");
+                  if (keyValuePairPartLinePara[0].equals("name")) {
+                    paraName = keyValuePairPartLinePara[1]
+                        .substring(1, keyValuePairPartLinePara[1].length() - 1);     // 去掉收尾的""
+                  }
+                  if (keyValuePairPartLinePara[0].equals("filename")) {
+                    isFileUpload = true;
+                    filename = keyValuePairPartLinePara[1]
+                        .substring(1, keyValuePairPartLinePara[1].length() - 1);     // 去掉收尾的""
+                  }
+                }
+              }
+            }
+          }
+          if (!isFileUpload) {                      // 普通数据提交
+            paraValue = new String(partHeadAndBody[1]);
+            request.paras.put(paraName, paraValue);
+          } else {                                  // 文件上传提交
+            paraValue = fileManager.create(filename);
+            request.paras.put(paraName, paraValue);
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(paraValue));
+            bos.write(partHeadAndBody[1]);
+            bos.flush();
+          }
         }
-
-
       }
-
       return true;
     } else {                  // 未实现的请求文本类型（Content-Type），什么都不做，由用户进行解析
       return true;
