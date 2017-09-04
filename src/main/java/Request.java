@@ -17,11 +17,12 @@ public class Request {
   public String version;                                // 协议版本号
   public String path;                                   // 相对于Host的路径
   public String url;                                    // 绝对的URL地址
-  public Head head = new Head();                        // 请求头信息
+  public Map<String, String> headers = new HashMap<>(); // 请求头信息
   public Method method;                                 // 请求方法
   public Optional<Body> body = Optional.empty();        // 请求体信息，可能不存在
   public String queryString;                            // 请求行中的<query>(?)和<frag>(#)字段
   public Map<String, String> paras = new HashMap<>();   // 用来保存请求头中queryString和请求体中的参数信息
+  public FileManager fileManager = FileManager.getInstance();   // 保存所有的上传文件
 
   @Override
   public boolean equals(Object o) {
@@ -43,7 +44,7 @@ public class Request {
     if (url != null ? !url.equals(request.url) : request.url != null) {
       return false;
     }
-    if (head != null ? !head.equals(request.head) : request.head != null) {
+    if (headers != null ? !headers.equals(request.headers) : request.headers != null) {
       return false;
     }
     if (method != request.method) {
@@ -56,7 +57,11 @@ public class Request {
         : request.queryString != null) {
       return false;
     }
-    return paras != null ? paras.equals(request.paras) : request.paras == null;
+    if (paras != null ? !paras.equals(request.paras) : request.paras != null) {
+      return false;
+    }
+    return fileManager != null ? fileManager.equals(request.fileManager)
+        : request.fileManager == null;
   }
 
   @Override
@@ -64,42 +69,13 @@ public class Request {
     int result = version != null ? version.hashCode() : 0;
     result = 31 * result + (path != null ? path.hashCode() : 0);
     result = 31 * result + (url != null ? url.hashCode() : 0);
-    result = 31 * result + (head != null ? head.hashCode() : 0);
+    result = 31 * result + (headers != null ? headers.hashCode() : 0);
     result = 31 * result + (method != null ? method.hashCode() : 0);
     result = 31 * result + (body != null ? body.hashCode() : 0);
     result = 31 * result + (queryString != null ? queryString.hashCode() : 0);
     result = 31 * result + (paras != null ? paras.hashCode() : 0);
+    result = 31 * result + (fileManager != null ? fileManager.hashCode() : 0);
     return result;
-  }
-
-  // Http请求头
-  public class Head {
-
-    Map<String, String> headers = new HashMap<>();
-
-    @Override
-    public String toString() {
-      return Utils.toJsonString(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-
-      Head head = (Head) o;
-
-      return headers != null ? headers.equals(head.headers) : head.headers == null;
-    }
-
-    @Override
-    public int hashCode() {
-      return headers != null ? headers.hashCode() : 0;
-    }
   }
 
   // Http请求方法

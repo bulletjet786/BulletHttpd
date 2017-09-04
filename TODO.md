@@ -11,13 +11,20 @@
 ~~17. 重写Request的toString方法，生成Json字符串来辅助测试~~
 ~~20. 编写Utils.find(byte[] bytes, byte[] found,int count)用来查找第count个found的方法，并进行测试~~
 ~~21. 完成Utils.split(byte[] bytes, byte[] split)方法并进行测试~~
+~~16. 为Request_multi解析para~~
+~~18. 重写multipart解析部分，增加更多的可读性，修改变量名称~~
+~~19. 将Request中的Head类提取出来，不再作为一个类，而作为一个单独字段，使用map存储~~
 18. 使用GSON生成Json字符串，以后为了压缩包可替换
 19. 添加临时文件管理器FileManager来管理上传的文件
 15. 为Request解析Cookie
-~~16. 为Request_multi解析para~~
 17. multipart/form-date中的中文问题
-~~18. 重写multipart解析部分，增加更多的可读性，修改变量名称~~
-19. 将Request中的Head类提取出来，不再作为一个类，而作为一个单独字段，使用map存储
+20. 为FileManager添加删除所有文件的功能
+21. 添加关于FileManager的测试代码
+22. 为Request添加FileManager
+23. 修改FileManager，使其更加易于测试
+~~(不适用Random，使用计数器)~~
+~~24. get.txt测试文件出错！~~
+
 
 
 

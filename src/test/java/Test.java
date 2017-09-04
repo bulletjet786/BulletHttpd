@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 /**
  * 验证某些想法
@@ -9,10 +10,7 @@ import java.io.IOException;
 public class Test {
 
   public static void main(String[] args) throws IOException {
-    int[] a = new int[]{1, 2, 3};
-    int[] b = new int[]{1, 2, 3};
-    System.out.println(a.hashCode());
-    System.out.println(b.hashCode());
+    System.out.println(LocalDateTime.now());
 
   }
 

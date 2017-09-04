@@ -1,6 +1,4 @@
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -18,7 +16,6 @@ public class RequestResolver {
 
   private Request request;    // 将要生成的请求对象
   public static String SEPARATOR = "\r\n";
-  public FileManager fileManager = new FileManager();
 
   /**
    * 从请求行中提取请求信息
@@ -58,13 +55,14 @@ public class RequestResolver {
     // 将请求信息添加进head对象中
     for (String line : requestHead.split(RequestResolver.SEPARATOR)) {
       String[] kv = line.split(": ");
-      request.head.headers.put(kv[0].toLowerCase(), kv[1].trim());        // HTTP HEAD不区分大小写，此处使用小写
+      request.headers.put(kv[0].toLowerCase(), kv[1].trim());        // HTTP HEAD不区分大小写，此处使用小写
     }
     // 生成Url地址
-    request.url = request.head.headers.get("Host".toLowerCase()) + request.path +
+    request.url = request.headers.get("Host".toLowerCase()) + request.path +
         (request.queryString.equals("") ? "" : ("?" + request.queryString));
 
-    // TODO: 处理cookies
+    // 处理cookies
+
     return true;
   }
 
@@ -77,7 +75,7 @@ public class RequestResolver {
    */
   private boolean resolverBody(byte[] requestBody) throws NotSupportException, IOException {
     request.body.get().requestBody = requestBody;               // 将全部请求体拷贝进requestBody
-    String contentTypeLine = request.head.headers.get("Content-Type".toLowerCase());
+    String contentTypeLine = request.headers.get("Content-Type".toLowerCase());
     String[] contentTypeArgs = contentTypeLine.split(";");
     request.body.get().contentType = contentTypeArgs[0].trim();
 
@@ -156,11 +154,8 @@ public class RequestResolver {
             paraValue = new String(partHeadAndBody[1]);
             request.paras.put(paraName, paraValue);
           } else {                                  // 文件上传提交
-            paraValue = fileManager.create(filename);
-            request.paras.put(paraName, paraValue);
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(paraValue));
-            bos.write(partHeadAndBody[1]);
-            bos.flush();
+            String savedFileName = request.fileManager.save(filename, partHeadAndBody[1]);
+            request.paras.put(paraName, savedFileName);
           }
         }
       }
@@ -217,7 +212,7 @@ public class RequestResolver {
       request.body = Optional.of(request.new Body());             // 填充Body对象
       // 获取报文长度
       String strLength;
-      if ((strLength = request.head.headers.get("content-length")) == null) {
+      if ((strLength = request.headers.get("content-length")) == null) {
         throw new NotSupportException("报文请求头中不含有content-length子段!");
       }
       int bodyLength = Integer.parseInt(strLength);
@@ -227,8 +222,6 @@ public class RequestResolver {
 
       resolverBody(requestBody);
     }
-
-    refactorRequest();
     return request;
   }
 
@@ -259,19 +252,5 @@ public class RequestResolver {
     // 输入流读完，没有发现，则返回-1
     return -1;
   }
-
-  /**
-   * 使用已经提取的Http信息重构请求对象
-   */
-  private boolean refactorRequest() {
-
-    // TODO
-    return true;
-  }
-
-  public static void main(String[] args) throws IOException {
-
-  }
-
 
 }
