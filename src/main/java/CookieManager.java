@@ -40,5 +40,4 @@ public class CookieManager {
     cookies.remove(key);
   }
 
-
 }

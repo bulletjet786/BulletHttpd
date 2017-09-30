@@ -14,8 +14,8 @@
 ~~16. 为Request_multi解析para~~
 ~~18. 重写multipart解析部分，增加更多的可读性，修改变量名称~~
 ~~19. 将Request中的Head类提取出来，不再作为一个类，而作为一个单独字段，使用map存储~~
+~~19. 添加临时文件管理器FileManager来管理上传的文件~~
 18. 使用GSON生成Json字符串，以后为了压缩包可替换
-19. 添加临时文件管理器FileManager来管理上传的文件
 15. 为Request解析Cookie
 17. multipart/form-date中的中文问题
 20. 为FileManager添加删除所有文件的功能
@@ -24,6 +24,9 @@
 23. 修改FileManager，使其更加易于测试
 ~~(不适用Random，使用计数器)~~
 ~~24. get.txt测试文件出错！~~
+24. 重写Response,将headers取出
+~~25. 在执行器中使用keepAlive特性~~
+25. 将FileManager的初始化操作提前
 
 
 
@@ -36,3 +39,6 @@
 
 最佳实践：
 toString()生成Json
+
+当前限制：
+测试后要手动删除tmp_file文件夹

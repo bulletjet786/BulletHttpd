@@ -10,6 +10,18 @@ import java.util.Map.Entry;
  */
 public class Response {
 
+  public static Response default404Response;
+  public static Response default200Response;
+
+  // 默认的404Response
+  static {
+    default404Response = new Response();
+    default404Response.line.status = 404;
+    default404Response.line.version = "HTTP/1.1";
+    default404Response.line.phrase = "Not Found";
+    default404Response.body.text = "This is a White Page Of 404";
+  }
+
   public Line line = new Line();
   public Head head = new Head();
   public Body body = new Body();
@@ -30,14 +42,6 @@ public class Response {
       return version + " " + status + " " + phrase + SEPARATOR;
     }
 
-    @Override
-    public String toString() {
-      return "Line{" +
-          "version='" + version + '\'' +
-          ", status=" + status +
-          ", pharse='" + phrase + '\'' +
-          '}';
-    }
   }
 
   public class Head {
@@ -91,8 +95,8 @@ public class Response {
    * @returnHTTP响应
    */
   public String genResponse() {
+    this.head.headers.put("Content-Length", String.valueOf(body.text.getBytes().length));
     return this.line.genLine() + this.head.genHead() + this.body.genBody();
-
   }
 
 }

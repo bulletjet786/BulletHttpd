@@ -29,7 +29,8 @@ public class ResponseGenerator {
     Response response = new Response();
     response.line.status = 404;
     response.line.phrase = "Not Found";
-    response.body.text = readFile(webRoot + "/404.html");
+    response.head.headers.put("Content-Length", "" + "404".getBytes().length);
+    response.body.text = "404";
     return response;
   }
 
