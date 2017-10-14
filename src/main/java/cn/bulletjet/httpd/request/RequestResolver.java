@@ -1,3 +1,8 @@
+package cn.bulletjet.httpd.request;
+
+import cn.bulletjet.httpd.exception.NotSupportException;
+import cn.bulletjet.httpd.fileupload.RequestFileManager;
+import cn.bulletjet.httpd.utils.Utils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,10 +63,24 @@ public class RequestResolver {
       request.headers.put(kv[0].toLowerCase(), kv[1].trim());        // HTTP HEAD不区分大小写，此处使用小写
     }
     // 生成Url地址
-    request.url = request.headers.get("Host".toLowerCase()) + request.path +
-        (request.queryString.equals("") ? "" : ("?" + request.queryString));
+    request.url = request.headers.get("Host".toLowerCase()) + request.path
+        + (request.queryString.equals("") ? "" : ("?" + request.queryString));
 
     // 处理cookies
+    if (request.headers.get("Cookie".toLowerCase()) != null) {
+      String[] cookies = request.headers.get("Cookie".toLowerCase()).split("; ");
+      for (String cookie : cookies) {
+        int splitIndex = cookie.indexOf("=");
+        if (splitIndex
+            == -1) {                                      // 找不到分割符号=，cookie不合法，则不处理这条cookie
+          continue;
+        } else {
+          String key = cookie.substring(0, splitIndex);
+          String value = cookie.substring(splitIndex + 1, cookie.length());
+          request.cookies.set(key, value);
+        }
+      }
+    }
 
     return true;
   }
@@ -154,7 +173,8 @@ public class RequestResolver {
             paraValue = new String(partHeadAndBody[1]);
             request.paras.put(paraName, paraValue);
           } else {                                  // 文件上传提交
-            String savedFileName = request.fileManager.save(filename, partHeadAndBody[1]);
+            String savedFileName = request.uploadFileManager
+                .save(paraName, filename, partHeadAndBody[1]);
             request.paras.put(paraName, savedFileName);
           }
         }
@@ -183,8 +203,9 @@ public class RequestResolver {
     return baos;
   }
 
-  public Request resolver(InputStream in) throws IOException, NotSupportException {
-    request = new Request();
+  public Request resolver(InputStream in, RequestFileManager requestFileManager)
+      throws IOException, NotSupportException {
+    request = new Request(requestFileManager);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     // 提取请求行数据

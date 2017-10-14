@@ -1,3 +1,5 @@
+package cn.bulletjet.httpd.exception;
+
 /**
  * 不支持的无法解析的报文异常
  *

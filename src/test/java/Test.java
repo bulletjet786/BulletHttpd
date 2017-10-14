@@ -1,5 +1,8 @@
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * 验证某些想法
@@ -10,7 +13,11 @@ import java.time.LocalDateTime;
 public class Test {
 
   public static void main(String[] args) throws IOException {
-    System.out.println(LocalDateTime.now());
+    ZonedDateTime dateTime = ZonedDateTime.now(ZoneId.of("GMT"));
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z")
+        .withLocale(
+            Locale.ENGLISH);
+    System.out.println(dateTime.format(formatter));
 
   }
 

@@ -1,3 +1,5 @@
+package cn.bulletjet.httpd.utils;
+
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Arrays;

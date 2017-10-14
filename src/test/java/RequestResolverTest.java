@@ -1,9 +1,15 @@
+import cn.bulletjet.httpd.exception.NotSupportException;
+import cn.bulletjet.httpd.fileupload.RequestFileManager;
+import cn.bulletjet.httpd.fileupload.UploadFileManager;
+import cn.bulletjet.httpd.request.Request;
+import cn.bulletjet.httpd.request.RequestResolver;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,10 +26,13 @@ import org.junit.Test;
 public class RequestResolverTest {
 
   private RequestResolver resolver = new RequestResolver();
+  private String uploadRoot = "./src/test/resources/tmp_file";
+  private UploadFileManager uploadFileManager = UploadFileManager.createFileManager(uploadRoot);
 
   @Test
   public void testResolverGet() throws IOException, NotSupportException {
-    Request expect = new Request();
+    RequestFileManager requestFileManager = uploadFileManager.createRequestFileManager();
+    Request expect = new Request(requestFileManager);
     expect.method = Request.Method.GET;
     expect.path = "/image.html";
     expect.queryString = "id=5&name=疾风剑豪";
@@ -41,26 +50,35 @@ public class RequestResolverTest {
     headers.put("Accept-Encoding".toLowerCase(), "gzip, deflate, sdch, br");
     headers.put("Accept-Language".toLowerCase(), "zh-CN,zh;q=0.8");
     headers.put("Cookie".toLowerCase(),
-        "BAIDUID=FE8DCF7A6F252B926ED7309BABAF1F3E:FG=1; BIDUPSID=FE8DCF7A6F252B926ED7309BABAF1F3E; PSTM=1476625749; BDUSS=DNMMVZMZmxMYXhoaXpQNnJsNkN5ZnlWcTN2QjI2dm1qNExoTnRRU35QUmJGVXBZSVFBQUFBJCQAAAAAAAAAAAEAAAA7QFgqwvG5x9bSu-oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFuIIlhbiCJYS; BAIDUCUID=++; __cfduid=d40eac4721142cd94f4151592e210eddb1494867352; BD_UPN=12314353; B64_BOT=1; cflag=15%3A3; pgv_pvi=1049399296; BDRCVFR[WLjnenwr-vY]=HE6Krexxi4nmMNBIyVEQhPEUf; BD_HOME=1; BD_CK_SAM=1; PSINO=7; H_PS_PSSID=1442_21091_17001_20698_20930; sug=0; sugstore=0; ORIGIN=0; bdime=0; BDSVRTM=0");
+        "BAIDUID=FE8DCF7A6F252B926ED7309BABAF1F3E:FG=1; BIDUPSID=FE8DCF7A6F252B926ED7309BABAF1F3E; PSTM=1476625749; BDUSS=DNMMVZMZmxMYXhoaXpQNnJsNkN5ZnlWcTN2QjI2dm1qNExoTnRRU35QUmJGVXBZSVFBQUFBJCQAAAAAAAAAAAEAAAA7QFgqwvG5x9bSu-oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFuIIlhbiCJYS; BAIDUCUID=++; __cfduid=d40eac4721142cd94f4151592e210eddb1494867352");
     expect.headers = headers;
     expect.paras.put("id", "5");
     expect.paras.put("name", "疾风剑豪");
+    expect.cookies.set("BAIDUID", "FE8DCF7A6F252B926ED7309BABAF1F3E:FG=1");
+    expect.cookies.set("BIDUPSID", "FE8DCF7A6F252B926ED7309BABAF1F3E");
+    expect.cookies.set("PSTM", "1476625749");
+    expect.cookies.set("BDUSS",
+        "DNMMVZMZmxMYXhoaXpQNnJsNkN5ZnlWcTN2QjI2dm1qNExoTnRRU35QUmJGVXBZSVFBQUFBJCQAAAAAAAAAAAEAAAA7QFgqwvG5x9bSu-oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFuIIlhbiCJYS");
+    expect.cookies.set("BAIDUCUID", "++");
+    expect.cookies.set("__cfduid", "d40eac4721142cd94f4151592e210eddb1494867352");
     FileInputStream fin = new FileInputStream(
         new File(".").getAbsolutePath() + "/src/main/resources/get.txt");
     RequestResolver rr = new RequestResolver();
-    Request result = rr.resolver(fin);
+    Request result = rr.resolver(fin, requestFileManager);
     System.out.println(expect);
     System.out.println(result);
     fin.close();
     Assert.assertEquals(expect.headers.get("content-length"),
         result.headers.get("content-length"));
     Assert.assertEquals(expect.paras.get("id"), result.paras.get("id"));
+    Assert.assertEquals(expect.cookies.toJsonString(), result.cookies.toJsonString());
 //    Assert.assertEquals(expect.toString(), result.toString());
   }
 
   @Test
   public void testResolverPostUrlEncode() throws IOException, NotSupportException {
-    Request expect = new Request();
+    RequestFileManager requestFileManager = uploadFileManager.createRequestFileManager();
+    Request expect = new Request(requestFileManager);
     expect.method = Request.Method.POST;
     expect.path = "/api/feed/index.html";
     expect.queryString = "";
@@ -82,7 +100,7 @@ public class RequestResolverTest {
     FileInputStream fin = new FileInputStream(
         new File(".").getAbsolutePath() + "/src/main/resources/post_encode.txt");
     RequestResolver rr = new RequestResolver();
-    Request result = rr.resolver(fin);
+    Request result = rr.resolver(fin, requestFileManager);
     System.out.println(result);
     System.out.println(expect);
     Assert.assertArrayEquals(expect.body.get().requestBody, result.body.get().requestBody);
@@ -94,7 +112,8 @@ public class RequestResolverTest {
 
   @Test
   public void testResolverPostMultiForm() throws IOException, NotSupportException {
-    Request expect = new Request();
+    RequestFileManager requestFileManager = uploadFileManager.createRequestFileManager();
+    Request expect = new Request(requestFileManager);
     expect.method = Request.Method.POST;
     expect.path = "/api/feed/index.html";
     expect.queryString = "";
@@ -132,15 +151,26 @@ public class RequestResolverTest {
     FileInputStream fin = new FileInputStream(
         new File(".").getAbsolutePath() + "/src/main/resources/post_multi.txt");
     RequestResolver rr = new RequestResolver();
-    Request result = rr.resolver(fin);
+    Request result = rr.resolver(fin, requestFileManager);
     System.out.println(result);
     System.out.println(expect);
     Assert.assertArrayEquals(expect.body.get().requestBody, result.body.get().requestBody);
     Assert.assertEquals(expect.headers.get("content-length"),
         result.headers.get("content-length"));
     Assert.assertEquals(expect.paras.get("key"), result.paras.get("key"));
-    Assert.assertEquals("./src/main/resources/tmp_file/1/0", result.fileManager.get("no-file"));
-//    Assert.assertEquals(expect.toString(), result.toString());
+    Assert.assertEquals(".\\src\\test\\resources\\tmp_file\\0/imgFile",
+        result.uploadFileManager.getFilePath("imgFile"));
+    //  Assert.assertEquals(expect.toString(), result.toString());
+  }
+
+  @After
+  public void shutdown() {
+    for (File requestDir : new File(uploadRoot).listFiles()) {
+      for (File f : requestDir.listFiles()) {
+        f.delete();
+      }
+      requestDir.delete();
+    }
   }
 
 }
